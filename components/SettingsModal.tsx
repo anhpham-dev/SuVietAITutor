@@ -1,7 +1,8 @@
 
+
 import React, { useEffect, useState } from 'react';
 import { UILabels } from '../types';
-import { X, Key, CheckCircle, AlertTriangle, ShieldCheck } from 'lucide-react';
+import { X, Key, Save, Trash2, Shield, Eye, EyeOff } from 'lucide-react';
 
 interface SettingsModalProps {
   isOpen: boolean;
@@ -10,36 +11,36 @@ interface SettingsModalProps {
 }
 
 export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, labels }) => {
-  const [hasKey, setHasKey] = useState<boolean>(false);
-
-  const checkKeyStatus = async () => {
-    if (window.aistudio && window.aistudio.hasSelectedApiKey) {
-      try {
-        const status = await window.aistudio.hasSelectedApiKey();
-        setHasKey(status);
-      } catch (e) {
-        console.error("Error checking key status", e);
-      }
-    }
-  };
+  const [geminiKey, setGeminiKey] = useState('');
+  const [veoKey, setVeoKey] = useState('');
+  const [showGemini, setShowGemini] = useState(false);
+  const [showVeo, setShowVeo] = useState(false);
+  const [statusMsg, setStatusMsg] = useState('');
 
   useEffect(() => {
     if (isOpen) {
-      checkKeyStatus();
+      const storedGemini = localStorage.getItem('GEMINI_API_KEY') || '';
+      const storedVeo = localStorage.getItem('VEO_API_KEY') || '';
+      setGeminiKey(storedGemini);
+      setVeoKey(storedVeo);
+      setStatusMsg('');
     }
   }, [isOpen]);
 
-  const handleSelectKey = async () => {
-    if (window.aistudio && window.aistudio.openSelectKey) {
-      try {
-        await window.aistudio.openSelectKey();
-        await checkKeyStatus();
-      } catch (e) {
-        console.error("Error opening key selector", e);
-      }
-    } else {
-        alert("API Key selection is not supported in this environment.");
-    }
+  const handleSave = () => {
+    localStorage.setItem('GEMINI_API_KEY', geminiKey);
+    localStorage.setItem('VEO_API_KEY', veoKey);
+    setStatusMsg(labels.settings.saved);
+    setTimeout(() => setStatusMsg(''), 2000);
+  };
+
+  const handleClear = () => {
+    localStorage.removeItem('GEMINI_API_KEY');
+    localStorage.removeItem('VEO_API_KEY');
+    setGeminiKey('');
+    setVeoKey('');
+    setStatusMsg(labels.settings.clear);
+    setTimeout(() => setStatusMsg(''), 2000);
   };
 
   if (!isOpen) return null;
@@ -74,31 +75,72 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, l
                     {labels.settings.apiDesc}
                 </p>
                 
-                <div className="bg-history-parchment/50 p-4 rounded border border-history-gold/10 mb-6 flex items-start gap-3">
-                    <ShieldCheck className="w-5 h-5 text-history-gold shrink-0 mt-0.5" />
-                    <div className="text-xs text-history-wood leading-relaxed">
-                        This application uses a unified Google Cloud Project key for both <strong>Gemini 2.5</strong> (Text/Image) and <strong>Veo</strong> (Video) models.
+                <div className="space-y-5">
+                    {/* Gemini Key Input */}
+                    <div>
+                        <label className="block text-xs font-bold text-history-wood uppercase tracking-widest mb-2">
+                            {labels.settings.geminiKeyLabel}
+                        </label>
+                        <div className="relative group">
+                            <input
+                                type={showGemini ? "text" : "password"}
+                                value={geminiKey}
+                                onChange={(e) => setGeminiKey(e.target.value)}
+                                placeholder={labels.settings.placeholder}
+                                className="w-full bg-white/60 border border-history-gold/20 rounded px-4 py-2 text-sm text-history-dark focus:outline-none focus:border-history-gold focus:ring-1 focus:ring-history-gold/30 font-mono tracking-wide"
+                            />
+                            <button 
+                                onClick={() => setShowGemini(!showGemini)}
+                                className="absolute right-3 top-2.5 text-history-wood/50 hover:text-history-dark"
+                            >
+                                {showGemini ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                            </button>
+                        </div>
+                    </div>
+
+                    {/* Veo Key Input */}
+                    <div>
+                        <label className="block text-xs font-bold text-history-wood uppercase tracking-widest mb-2">
+                            {labels.settings.veoKeyLabel}
+                        </label>
+                        <div className="relative group">
+                            <input
+                                type={showVeo ? "text" : "password"}
+                                value={veoKey}
+                                onChange={(e) => setVeoKey(e.target.value)}
+                                placeholder={labels.settings.placeholder}
+                                className="w-full bg-white/60 border border-history-gold/20 rounded px-4 py-2 text-sm text-history-dark focus:outline-none focus:border-history-gold focus:ring-1 focus:ring-history-gold/30 font-mono tracking-wide"
+                            />
+                            <button 
+                                onClick={() => setShowVeo(!showVeo)}
+                                className="absolute right-3 top-2.5 text-history-wood/50 hover:text-history-dark"
+                            >
+                                {showVeo ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                            </button>
+                        </div>
                     </div>
                 </div>
 
-                <div className="flex items-center justify-between bg-white/60 p-4 rounded border border-history-gold/10">
-                    <div className="flex items-center gap-2">
-                        {hasKey ? (
-                            <CheckCircle className="w-4 h-4 text-green-600" />
-                        ) : (
-                            <AlertTriangle className="w-4 h-4 text-amber-500" />
-                        )}
-                        <span className={`text-sm font-medium ${hasKey ? 'text-green-700' : 'text-amber-700'}`}>
-                            {hasKey ? labels.settings.statusConnected : labels.settings.statusNotConnected}
-                        </span>
+                <div className="mt-6 flex flex-col items-center gap-2">
+                    <div className="flex gap-3 w-full">
+                         <button
+                            onClick={handleClear}
+                            className="flex-1 px-4 py-2 border border-history-red/30 text-history-red rounded-[4px] font-medium hover:bg-history-red/5 transition-all text-xs uppercase tracking-widest flex items-center justify-center gap-2"
+                        >
+                            <Trash2 className="w-3 h-3" /> {labels.settings.clear}
+                        </button>
+                        <button
+                            onClick={handleSave}
+                            className="flex-1 px-4 py-2 bg-history-ink text-history-paper rounded-[4px] font-medium shadow-sm hover:bg-black transition-all text-xs uppercase tracking-widest flex items-center justify-center gap-2"
+                        >
+                            <Save className="w-3 h-3" /> {labels.settings.save}
+                        </button>
                     </div>
-                    
-                    <button
-                        onClick={handleSelectKey}
-                        className="px-4 py-2 bg-history-ink text-history-paper rounded-[4px] font-medium shadow-sm hover:bg-black transition-all text-xs uppercase tracking-widest"
-                    >
-                        {labels.settings.configureBtn}
-                    </button>
+                    {statusMsg && (
+                        <span className="text-xs text-green-700 font-medium animate-fade-in flex items-center gap-1 mt-2">
+                            <Shield className="w-3 h-3" /> {statusMsg}
+                        </span>
+                    )}
                 </div>
             </div>
         </div>
