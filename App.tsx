@@ -1,4 +1,5 @@
 
+
 import React, { useState } from 'react';
 import { generateHistoryContent } from './services/geminiService';
 import { HistoryLessonData, SectionTab, Language, UILabels, ViewMode, PdfSection } from './types';
@@ -89,15 +90,18 @@ const UI_TEXT: Record<Language, {
         download: "Download",
         videoDisclaimer: "Video generation typically takes 1-2 minutes.",
         selectKey: "Select API Key",
-        apiKeyRequired: "Paid API Key Required"
+        apiKeyRequired: "API Key Required. Please set it in Settings."
       },
       settings: {
         title: "Settings",
-        apiSection: "API Configuration",
-        apiDesc: "Manage access to Google's Generative AI models (Gemini & Veo).",
-        configureBtn: "Select Project / Key",
-        statusConnected: "API Key Active",
-        statusNotConnected: "No Key Selected",
+        apiSection: "API Credentials",
+        apiDesc: "Enter your Google AI Studio API Keys. Keys are stored locally in your browser cache.",
+        geminiKeyLabel: "Gemini API Key (Text & Image)",
+        veoKeyLabel: "Veo API Key (Video)",
+        placeholder: "Enter API Key...",
+        save: "Save Keys",
+        saved: "Saved!",
+        clear: "Clear All",
         close: "Close"
       }
     },
@@ -175,15 +179,18 @@ const UI_TEXT: Record<Language, {
         download: "Tải về",
         videoDisclaimer: "Việc tạo video có thể mất 1-2 phút.",
         selectKey: "Chọn API Key",
-        apiKeyRequired: "Cần API Key trả phí"
+        apiKeyRequired: "Cần API Key. Vui lòng nhập trong Cài đặt."
       },
       settings: {
         title: "Cài đặt",
-        apiSection: "Cấu hình API",
-        apiDesc: "Quản lý quyền truy cập các mô hình Generative AI (Gemini & Veo).",
-        configureBtn: "Chọn Project / Key",
-        statusConnected: "Đã kết nối API Key",
-        statusNotConnected: "Chưa có API Key",
+        apiSection: "Thông tin API",
+        apiDesc: "Nhập khóa API Google AI Studio của bạn. Khóa sẽ được lưu cục bộ trên trình duyệt.",
+        geminiKeyLabel: "Gemini API Key (Văn bản & Ảnh)",
+        veoKeyLabel: "Veo API Key (Video)",
+        placeholder: "Nhập API Key...",
+        save: "Lưu Khóa",
+        saved: "Đã Lưu!",
+        clear: "Xóa Tất Cả",
         close: "Đóng"
       }
     },
