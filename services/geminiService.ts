@@ -1,6 +1,16 @@
 
+
 import { GoogleGenAI, Type, Schema } from "@google/genai";
 import { HistoryLessonData, Language } from "../types";
+
+// Helper to get API keys from local storage or fallback to env
+const getApiKey = (type: 'gemini' | 'veo'): string | undefined => {
+  if (typeof window !== 'undefined') {
+    const stored = localStorage.getItem(type === 'gemini' ? 'GEMINI_API_KEY' : 'VEO_API_KEY');
+    if (stored && stored.trim() !== '') return stored;
+  }
+  return process.env.API_KEY;
+};
 
 // Define the precise schema for the API response
 const lessonSchema: Schema = {
@@ -117,8 +127,7 @@ const lessonSchema: Schema = {
 };
 
 export const generateHistoryContent = async (topic: string, language: Language): Promise<HistoryLessonData> => {
-  // Read process.env.API_KEY inside the function to ensure it picks up any runtime updates
-  const apiKey = process.env.API_KEY;
+  const apiKey = getApiKey('gemini');
 
   if (!apiKey) {
     throw new Error("API Key is missing. Please set it via the Settings menu.");
@@ -174,8 +183,10 @@ export const generateHistoryContent = async (topic: string, language: Language):
 };
 
 export const generateImageFromPrompt = async (prompt: string): Promise<string> => {
-    // Re-initialize with current API key from process.env
-    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+    const apiKey = getApiKey('gemini');
+    if (!apiKey) throw new Error("API Key is missing");
+
+    const ai = new GoogleGenAI({ apiKey });
     
     const response = await ai.models.generateContent({
         model: 'gemini-2.5-flash-image',
@@ -193,8 +204,10 @@ export const generateImageFromPrompt = async (prompt: string): Promise<string> =
 };
 
 export const generateVideoFromPrompt = async (prompt: string): Promise<string> => {
-    // Re-initialize with current API key from process.env to ensure selected key is used
-    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+    const apiKey = getApiKey('veo');
+    if (!apiKey) throw new Error("API Key is missing");
+
+    const ai = new GoogleGenAI({ apiKey });
     
     let operation = await ai.models.generateVideos({
         model: 'veo-3.1-fast-generate-preview',
@@ -216,7 +229,7 @@ export const generateVideoFromPrompt = async (prompt: string): Promise<string> =
     if (!videoUri) throw new Error("No video URI returned");
 
     // Fetch the actual video bytes using the key
-    const response = await fetch(`${videoUri}&key=${process.env.API_KEY}`);
+    const response = await fetch(`${videoUri}&key=${apiKey}`);
     const blob = await response.blob();
     return URL.createObjectURL(blob);
 };
