@@ -70,9 +70,12 @@ export interface UILabels {
     title: string;
     apiSection: string;
     apiDesc: string;
-    configureBtn: string;
-    statusConnected: string;
-    statusNotConnected: string;
+    geminiKeyLabel: string;
+    veoKeyLabel: string;
+    placeholder: string;
+    save: string;
+    saved: string;
+    clear: string;
     close: string;
   };
 }
