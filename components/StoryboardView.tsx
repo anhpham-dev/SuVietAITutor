@@ -1,3 +1,5 @@
+
+
 import React, { useState } from 'react';
 import { HistoryLessonData, UILabels } from '../types';
 import { Film, Mic, Video, Camera, Type, Music, PlayCircle, Loader2 } from 'lucide-react';
@@ -15,16 +17,13 @@ export const StoryboardView: React.FC<StoryboardViewProps> = ({ data, labels }) 
   const handleGenerateVideo = async (index: number, scene: any) => {
     if (loading[index]) return;
 
-    if (window.aistudio && window.aistudio.hasSelectedApiKey) {
-        const hasKey = await window.aistudio.hasSelectedApiKey();
-        if (!hasKey) {
-            if (window.aistudio.openSelectKey) {
-                await window.aistudio.openSelectKey();
-            } else {
-                alert(labels.media.apiKeyRequired);
-                return;
-            }
-        }
+    // Check for Veo Key in LocalStorage or Env
+    const storedKey = localStorage.getItem('VEO_API_KEY');
+    const hasKey = (storedKey && storedKey.trim() !== '') || process.env.API_KEY;
+
+    if (!hasKey) {
+        alert(labels.media.apiKeyRequired);
+        return;
     }
 
     setLoading(prev => ({ ...prev, [index]: true }));
@@ -37,12 +36,7 @@ export const StoryboardView: React.FC<StoryboardViewProps> = ({ data, labels }) 
         console.error("Failed to generate video", error);
         const errorMessage = error.message || JSON.stringify(error);
         if (errorMessage.includes("Requested entity was not found") || errorMessage.includes("404")) {
-            if (window.aistudio?.openSelectKey) {
-                await window.aistudio.openSelectKey();
-                alert("Veo Video Generation Error: The current API key cannot access the video model. Please select a valid paid API key to continue.");
-            } else {
-                alert("Video generation failed (404): The Veo model was not found.");
-            }
+            alert("Veo Video Generation Error: The current API key cannot access the video model. Please check your key in Settings.");
         } else {
             alert(`Failed to generate video. Error: ${errorMessage.substring(0, 100)}...`);
         }
