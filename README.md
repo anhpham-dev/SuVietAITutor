@@ -58,7 +58,7 @@ Contributing
 - Open issues or PRs. Keep changes focused and add or update a short usage note in this README when adding new features.
 
 License
-- MIT (or adjust as appropriate for your project).
+- MIT
 
 Questions or next steps
 - Want me to add a `.env.example` file, CI workflow, or documentation for `services/geminiService.ts`? I can add any of those next.
