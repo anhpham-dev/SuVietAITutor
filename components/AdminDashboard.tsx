@@ -8,6 +8,7 @@ import { auth, db } from '../services/firebase';
 import { collection, getDocs, updateDoc, doc, Timestamp, setDoc, deleteDoc } from 'firebase/firestore';
 import { UserProfile } from '../contexts/AuthContext';
 import { useToast } from './Toast';
+import { config } from '../services/config';
 
 interface LoginToken {
     id: string;
@@ -221,7 +222,7 @@ export const AdminDashboard: React.FC = () => {
     // Check for specific admin email (Replace with real admin check logic)
     // For demo purposes, we will allow anyone logged in to see this, or restrict it slightly
     // in real production you'd check a custom claim or db role.
-    const adminEmail = import.meta.env.VITE_ADMIN_EMAIL;
+    const adminEmail = config.admin.email;
     if (!currentUser || currentUser.email !== adminEmail) {
         return (
             <div className="min-h-screen flex items-center justify-center bg-history-parchment/20 p-6 font-serif">

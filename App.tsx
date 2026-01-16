@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { generateHistoryContent } from './services/geminiService';
+import { config } from './services/config';
 import { HistoryLessonData, SectionTab, Language, UILabels, ViewMode, PdfSection } from './types';
 import { ExploreMode } from './components/ExploreMode';
 import { StudyMode } from './components/StudyMode';
@@ -233,7 +234,7 @@ const Home: React.FC = () => {
   const t = UI_TEXT[language];
   const navigate = useNavigate();
 
-  const isAdmin = currentUser?.email === import.meta.env.VITE_ADMIN_EMAIL;
+  const isAdmin = currentUser?.email === config.admin.email;
 
   const handleLogout = async () => {
     try {

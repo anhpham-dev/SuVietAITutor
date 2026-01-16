@@ -3,13 +3,15 @@
 import { GoogleGenAI, Type, Schema } from "@google/genai";
 import { HistoryLessonData, Language } from "../types";
 
-// Helper to get API keys from local storage or fallback to env
+import { config } from "./config";
+
+// Helper to get API keys from local storage or fallback to config
 const getApiKey = (type: 'gemini' | 'veo'): string | undefined => {
   if (typeof window !== 'undefined') {
     const stored = localStorage.getItem(type === 'gemini' ? 'GEMINI_API_KEY' : 'VEO_API_KEY');
     if (stored && stored.trim() !== '') return stored;
   }
-  return process.env.API_KEY;
+  return type === 'gemini' ? config.ai.geminiKey : config.ai.veoKey;
 };
 
 // Define the precise schema for the API response
