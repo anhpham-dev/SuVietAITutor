@@ -3,13 +3,15 @@
 import { GoogleGenAI, Type, Schema } from "@google/genai";
 import { HistoryLessonData, Language } from "../types";
 
-// Helper to get API keys from local storage or fallback to env
+import { config } from "./config";
+
+// Helper to get API keys from local storage or fallback to config
 const getApiKey = (type: 'gemini' | 'veo'): string | undefined => {
   if (typeof window !== 'undefined') {
     const stored = localStorage.getItem(type === 'gemini' ? 'GEMINI_API_KEY' : 'VEO_API_KEY');
     if (stored && stored.trim() !== '') return stored;
   }
-  return process.env.API_KEY;
+  return type === 'gemini' ? config.ai.geminiKey : config.ai.veoKey;
 };
 
 // Define the precise schema for the API response
@@ -126,17 +128,17 @@ const lessonSchema: Schema = {
   ],
 };
 
-export const generateHistoryContent = async (topic: string, language: Language): Promise<HistoryLessonData> => {
-  const apiKey = getApiKey('gemini');
+export const generateHistoryContent = async (topic: string, language: Language, apiKey?: string): Promise<HistoryLessonData> => {
+  const key = apiKey || getApiKey('gemini');
 
-  if (!apiKey) {
-    throw new Error("API Key is missing. Please set it via the Settings menu.");
+  if (!key) {
+    throw new Error("API Key is missing. Ask Admin to set it for your account.");
   }
 
-  const ai = new GoogleGenAI({ apiKey });
+  const ai = new GoogleGenAI({ apiKey: key });
 
-  const langInstruction = language === 'vi' 
-    ? "IMPORTANT: ALL CONTENT MUST BE GENERATED IN VIETNAMESE." 
+  const langInstruction = language === 'vi'
+    ? "IMPORTANT: ALL CONTENT MUST BE GENERATED IN VIETNAMESE."
     : "IMPORTANT: ALL CONTENT MUST BE GENERATED IN ENGLISH.";
 
   const systemPrompt = `
@@ -161,13 +163,13 @@ export const generateHistoryContent = async (topic: string, language: Language):
 
   try {
     const response = await ai.models.generateContent({
-      model: "gemini-2.5-flash",
+      model: "gemini-3-flash-preview", // Updated to latest available
       contents: `Generate a history lesson package for the topic: "${topic}". Response must be in ${language === 'vi' ? 'Vietnamese' : 'English'}.`,
       config: {
         systemInstruction: systemPrompt,
         responseMimeType: "application/json",
         responseSchema: lessonSchema,
-        temperature: 0.4, 
+        temperature: 0.4,
       },
     });
 
@@ -183,53 +185,53 @@ export const generateHistoryContent = async (topic: string, language: Language):
 };
 
 export const generateImageFromPrompt = async (prompt: string): Promise<string> => {
-    const apiKey = getApiKey('gemini');
-    if (!apiKey) throw new Error("API Key is missing");
+  const apiKey = getApiKey('gemini');
+  if (!apiKey) throw new Error("API Key is missing");
 
-    const ai = new GoogleGenAI({ apiKey });
-    
-    const response = await ai.models.generateContent({
-        model: 'gemini-2.5-flash-image',
-        contents: {
-            parts: [{ text: prompt }]
-        }
-    });
+  const ai = new GoogleGenAI({ apiKey });
 
-    for (const part of response.candidates?.[0]?.content?.parts || []) {
-        if (part.inlineData) {
-            return `data:${part.inlineData.mimeType};base64,${part.inlineData.data}`;
-        }
+  const response = await ai.models.generateContent({
+    model: 'gemini-2.5-flash-image',
+    contents: {
+      parts: [{ text: prompt }]
     }
-    throw new Error("No image generated");
+  });
+
+  for (const part of response.candidates?.[0]?.content?.parts || []) {
+    if (part.inlineData) {
+      return `data:${part.inlineData.mimeType};base64,${part.inlineData.data}`;
+    }
+  }
+  throw new Error("No image generated");
 };
 
 export const generateVideoFromPrompt = async (prompt: string): Promise<string> => {
-    const apiKey = getApiKey('veo');
-    if (!apiKey) throw new Error("API Key is missing");
+  const apiKey = getApiKey('veo');
+  if (!apiKey) throw new Error("API Key is missing");
 
-    const ai = new GoogleGenAI({ apiKey });
-    
-    let operation = await ai.models.generateVideos({
-        model: 'veo-3.1-fast-generate-preview',
-        prompt: prompt,
-        config: {
-            numberOfVideos: 1,
-            resolution: '720p',
-            aspectRatio: '16:9'
-        }
-    });
+  const ai = new GoogleGenAI({ apiKey });
 
-    // Poll for completion
-    while (!operation.done) {
-        await new Promise(resolve => setTimeout(resolve, 5000));
-        operation = await ai.operations.getVideosOperation({ operation: operation });
+  let operation = await ai.models.generateVideos({
+    model: 'veo-3.1-fast-generate-preview',
+    prompt: prompt,
+    config: {
+      numberOfVideos: 1,
+      resolution: '720p',
+      aspectRatio: '16:9'
     }
+  });
 
-    const videoUri = operation.response?.generatedVideos?.[0]?.video?.uri;
-    if (!videoUri) throw new Error("No video URI returned");
+  // Poll for completion
+  while (!operation.done) {
+    await new Promise(resolve => setTimeout(resolve, 5000));
+    operation = await ai.operations.getVideosOperation({ operation: operation });
+  }
 
-    // Fetch the actual video bytes using the key
-    const response = await fetch(`${videoUri}&key=${apiKey}`);
-    const blob = await response.blob();
-    return URL.createObjectURL(blob);
+  const videoUri = operation.response?.generatedVideos?.[0]?.video?.uri;
+  if (!videoUri) throw new Error("No video URI returned");
+
+  // Fetch the actual video bytes using the key
+  const response = await fetch(`${videoUri}&key=${apiKey}`);
+  const blob = await response.blob();
+  return URL.createObjectURL(blob);
 };

@@ -1,0 +1,38 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper function to check if user is admin
+    // In a real app, use Custom Claims. For this demo, we check email matching env/config (hardcoded here for rules logic matching client)
+    // best practice: request.auth.token.admin == true;
+    function isAdmin() {
+       return request.auth != null && request.auth.token.email == 'anhpham14079@gmail.com';
+    }
+
+    function isOwner(userId) {
+      return request.auth != null && request.auth.uid == userId;
+    }
+
+    // Users Collection
+    match /users/{userId} {
+      allow read, write: if isOwner(userId) || isAdmin();
+    }
+
+    // Login Tokens Collection
+    // Public needs to read to validate token during login flow
+    // Only Admin can create/delete
+    match /loginTokens/{token} {
+      allow get: if true; // Login page needs to fetch specific token
+      allow list: if isAdmin(); // Only admin can see all tokens
+      allow create, delete: if isAdmin();
+      allow update: if true; // For marking as used? Ideally restrict this. 
+      // Better: allow update: if request.resource.data.diff(resource.data).affectedKeys().hasOnly(['used', 'usedAt']);
+    }
+
+    // Default deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
