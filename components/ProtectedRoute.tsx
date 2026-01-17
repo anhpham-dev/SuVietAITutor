@@ -1,5 +1,7 @@
+'use client';
+
 import React from 'react';
-import { Navigate } from 'react-router-dom';
+import { redirect } from 'next/navigation';
 import { useAuth } from '../contexts/AuthContext';
 
 export const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
@@ -10,7 +12,7 @@ export const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
     }
 
     if (!currentUser) {
-        return <Navigate to="/login" replace />;
+        redirect('/login');
     }
 
     return <>{children}</>;

@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useState } from 'react';
 import { generateHistoryContent } from '../services/geminiService';
 import { config } from '../services/config';
@@ -7,7 +9,8 @@ import { StudyMode } from './StudyMode';
 import { PrintLayout } from './PrintLayout';
 import { SettingsModal } from './SettingsModal';
 import { BookOpen, Sparkles, AlertCircle, Globe, Compass, GraduationCap, Download, X, CheckSquare, Square, Search, Feather, Settings, LogOut, User, Shield } from 'lucide-react';
-import { Link, useNavigate } from 'react-router-dom';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useAuth } from '../contexts/AuthContext';
 import { auth } from '../services/firebase';
 import { Onboarding, useOnboarding } from './Onboarding';
@@ -225,14 +228,14 @@ export const Home: React.FC = () => {
     const { userProfile, currentUser } = useAuth();
     const { showOnboarding, completeOnboarding } = useOnboarding();
     const t = UI_TEXT[language];
-    const navigate = useNavigate();
+    const router = useRouter();
 
     const isAdmin = currentUser?.email === config.admin.email;
 
     const handleLogout = async () => {
         try {
             await auth.signOut();
-            navigate('/login');
+            router.push('/login');
         } catch (error) {
             console.error('Logout failed:', error);
         }
@@ -348,7 +351,7 @@ export const Home: React.FC = () => {
                         {/* Admin Button - Only for admin */}
                         {isAdmin && (
                             <Link
-                                to="/admin"
+                                href="/admin"
                                 className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-history-red/10 text-history-red text-xs font-bold uppercase tracking-widest hover:bg-history-red hover:text-white transition-all border border-history-red/20"
                             >
                                 <Shield className="w-3 h-3" />
