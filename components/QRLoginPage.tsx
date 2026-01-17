@@ -1,6 +1,8 @@
+'use client';
 
 import React, { useEffect, useState } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useParams, useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { auth, db } from '../services/firebase';
 import { doc, getDoc, updateDoc } from 'firebase/firestore';
@@ -20,8 +22,9 @@ interface LoginToken {
 type LoginStatus = 'loading' | 'success' | 'error' | 'expired' | 'used';
 
 export const QRLoginPage: React.FC = () => {
-    const { token } = useParams<{ token: string }>();
-    const navigate = useNavigate();
+    const params = useParams<{ token: string }>();
+    const token = params?.token;
+    const router = useRouter();
     const [status, setStatus] = useState<LoginStatus>('loading');
     const [message, setMessage] = useState('Validating login token...');
     const [userName, setUserName] = useState('');
@@ -77,7 +80,7 @@ export const QRLoginPage: React.FC = () => {
 
                 // Redirect to home after a brief moment
                 setTimeout(() => {
-                    navigate('/');
+                    router.push('/');
                 }, 1500);
 
             } catch (error: any) {
@@ -94,7 +97,7 @@ export const QRLoginPage: React.FC = () => {
         };
 
         processLogin();
-    }, [token, navigate]);
+    }, [token, router]);
 
     const getStatusIcon = () => {
         switch (status) {
@@ -155,7 +158,7 @@ export const QRLoginPage: React.FC = () => {
 
                 {(status === 'error' || status === 'expired' || status === 'used') && (
                     <Link
-                        to="/login"
+                        href="/login"
                         className="inline-flex items-center gap-2 px-6 py-2.5 bg-history-ink text-history-paper rounded-md font-display font-medium text-sm tracking-widest uppercase hover:bg-black transition-all"
                     >
                         <ArrowLeft className="w-4 h-4" />

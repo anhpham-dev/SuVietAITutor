@@ -1,8 +1,11 @@
 
+'use client';
+
 import React, { useState } from 'react';
 import { QRCodeCanvas } from 'qrcode.react';
 import { useAuth } from '../contexts/AuthContext';
-import { useNavigate, Link } from 'react-router-dom';
+import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { Shield, LogOut, ArrowLeft, Download, Plus, Trash2, Users, Save, Key, X, Loader2, Copy, Check, QrCode, Eye, EyeOff } from 'lucide-react';
 import { auth, db } from '../services/firebase';
 import { collection, getDocs, updateDoc, doc, Timestamp, setDoc, deleteDoc } from 'firebase/firestore';
@@ -27,7 +30,7 @@ interface UserWithId extends UserProfile {
 
 export const AdminDashboard: React.FC = () => {
     const { currentUser } = useAuth();
-    const navigate = useNavigate();
+    const router = useRouter();
     const [referralLink, setReferralLink] = useState('');
     const [inviteeName, setInviteeName] = useState('');
 
@@ -113,7 +116,7 @@ export const AdminDashboard: React.FC = () => {
     const handleLogout = async () => {
         try {
             await auth.signOut();
-            navigate('/login');
+            router.push('/login');
         } catch (error) {
             console.error("Failed to log out", error);
         }
@@ -230,7 +233,7 @@ export const AdminDashboard: React.FC = () => {
                     <Shield className="w-12 h-12 text-history-red mx-auto mb-4" />
                     <h2 className="font-display font-medium text-xl text-history-ink mb-2">Access Denied</h2>
                     <p className="text-history-wood text-sm mb-6">This area is restricted to the Grand Archivist only.</p>
-                    <Link to="/" className="px-6 py-2 bg-history-ink text-history-paper rounded text-xs font-bold uppercase tracking-widest hover:bg-black transition-all">
+                    <Link href="/" className="px-6 py-2 bg-history-ink text-history-paper rounded text-xs font-bold uppercase tracking-widest hover:bg-black transition-all">
                         Return Home
                     </Link>
                 </div>
@@ -242,7 +245,7 @@ export const AdminDashboard: React.FC = () => {
         <div className="min-h-screen bg-history-parchment/20 p-3 sm:p-6 font-serif">
             <header className="max-w-6xl mx-auto flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 sm:mb-10 pb-4 sm:pb-6 border-b border-history-gold/30 gap-4">
                 <div className="flex items-center gap-3 sm:gap-4">
-                    <Link to="/" className="p-2 hover:bg-black/5 rounded-full transition-colors text-history-wood">
+                    <Link href="/" className="p-2 hover:bg-black/5 rounded-full transition-colors text-history-wood">
                         <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5" />
                     </Link>
                     <div className="flex items-center gap-2 sm:gap-3">

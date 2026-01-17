@@ -1,9 +1,11 @@
+'use client';
 
 import React, { useState } from 'react';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { doc, setDoc } from 'firebase/firestore';
 import { auth, db } from '../services/firebase';
-import { useNavigate, Link } from 'react-router-dom';
+import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { UserPlus, ArrowLeft, AlertCircle, Loader2 } from 'lucide-react';
 
 export const Register: React.FC = () => {
@@ -12,7 +14,7 @@ export const Register: React.FC = () => {
     const [confirmPassword, setConfirmPassword] = useState('');
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
-    const navigate = useNavigate();
+    const router = useRouter();
 
     const handleRegister = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -30,7 +32,7 @@ export const Register: React.FC = () => {
                 role: 'user',
                 apiKey: ''
             });
-            navigate('/');
+            router.push('/');
         } catch (err: any) {
             setError('Failed to create an account. ' + err.message);
         } finally {
@@ -41,7 +43,7 @@ export const Register: React.FC = () => {
     return (
         <div className="min-h-screen flex items-center justify-center bg-history-parchment/20 p-3 sm:p-4 font-serif">
             <div className="max-w-md w-full glass-panel p-6 sm:p-8 border border-history-gold/30 rounded-lg shadow-2xl relative">
-                <Link to="/" className="absolute top-3 sm:top-4 left-3 sm:left-4 text-history-wood hover:text-history-ink transition-colors">
+                <Link href="/" className="absolute top-3 sm:top-4 left-3 sm:left-4 text-history-wood hover:text-history-ink transition-colors">
                     <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5" />
                 </Link>
                 <div className="flex flex-col items-center mb-6 sm:mb-8">
@@ -107,7 +109,7 @@ export const Register: React.FC = () => {
                 </form>
 
                 <div className="mt-6 text-center text-sm text-history-wood">
-                    <p>Already a scholar? <Link to="/login" className="text-history-red hover:underline font-medium">Login</Link></p>
+                    <p>Already a scholar? <Link href="/login" className="text-history-red hover:underline font-medium">Login</Link></p>
                 </div>
             </div>
         </div>
